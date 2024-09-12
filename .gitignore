@@ -1,1 +1,4 @@
 data/MNIST/raw
+data/food-101/food-101
+**/*.zip
+**/*.tar.gz
