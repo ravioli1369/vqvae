@@ -3,3 +3,4 @@ data/food-101/food-101
 data/ImageNet/tiny-imagenet-200
 **/*.zip
 **/*.tar.gz
+**/__pycache__
