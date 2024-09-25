@@ -7,6 +7,14 @@ import os
 from datasets.block import BlockDataset, LatentBlockDataset
 import numpy as np
 
+from torchvision import transforms
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Lambda(lambda x: x.repeat(3, 1, 1)),  # Repeat channel
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
 
 def load_cifar():
     train = datasets.CIFAR10(root="data", train=True, download=True,
@@ -77,6 +85,24 @@ def load_data_and_data_loaders(dataset, batch_size):
         training_loader, validation_loader = data_loaders(
             training_data, validation_data, batch_size)
         x_train_var = np.var(training_data.data / 255.0)
+
+    elif dataset == 'MNIST':
+        training_data = datasets.MNIST(root="../data", train=True, download=False, transform=transform)
+        validation_data = datasets.MNIST(root="../data", train=False, download=False, transform=transform)
+        training_loader, validation_loader = data_loaders(
+            training_data, validation_data, batch_size)
+                
+        x_train_var = np.var(training_data.data.numpy() / 255.0)
+
+    elif dataset == 'NOISY_MNIST':
+        training_data = datasets.MNIST(root="../data", train=True, download=False, transform=transform)
+        validation_data = datasets.MNIST(root="../data", train=False, download=False, transform=transform)
+        # Add Noise Functions here
+        training_data.data = torch.poisson(training_data.data.to(torch.float16))
+        training_loader, validation_loader = data_loaders(
+            training_data, validation_data, batch_size)
+                
+        x_train_var = np.var(training_data.data.numpy() / 255.0)
 
     elif dataset == 'BLOCK':
         training_data, validation_data = load_block()
