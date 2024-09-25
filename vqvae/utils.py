@@ -9,12 +9,60 @@ import numpy as np
 
 from torchvision import transforms
 
+class AddGaussianNoise(object):
+    def __init__(self, mean=0., std=1.):
+        self.std = std
+        self.mean = mean
+        
+    def __call__(self, tensor):
+        return tensor + torch.randn(tensor.size()) * self.std + self.mean
+    
+    def __repr__(self):
+        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
+class AddPoissonNoise(object):
+    def __init__(self):
+        pass
+    def __call__(self, tensor):
+        return torch.poisson(tensor.to(torch.float32))/torch.max(tensor)
+    def __repr__(self):
+        return self.__class__.__name__ + '()'
+
+class AddSpeckleNoise(object):
+    def __init__(self, std):
+        self.std = std
+    def __call__(self, tensor):
+        return tensor + (torch.randn(1) * self.std)*torch.sqrt(tensor)
+    def __repr__(self):
+        return self.__class__.__name__ + '(std={0})'.format(self.std)
+
+
 transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Lambda(lambda x: x.repeat(3, 1, 1)),  # Repeat channel
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
+gaussian_noise_transform = transforms.Compose([
+    transforms.ToTensor(),
+    AddGaussianNoise(0., 0.1),
+    transforms.Lambda(lambda x: x.repeat(3, 1, 1)),  # Repeat channel
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
+poisson_noise_transform = transforms.Compose([
+    transforms.PILToTensor(),
+    AddPoissonNoise(),
+    transforms.Lambda(lambda x: x.repeat(3, 1, 1)),  # Repeat channel
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
+speckle_noise_transform = transforms.Compose([
+    transforms.ToTensor(),
+    AddSpeckleNoise(0.1),
+    transforms.Lambda(lambda x: x.repeat(3, 1, 1)),  # Repeat channel
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
 
 def load_cifar():
     train = datasets.CIFAR10(root="data", train=True, download=True,
@@ -66,7 +114,7 @@ def load_latent_block():
     return train, val
 
 
-def data_loaders(train_data, val_data, batch_size):
+def data_loaders(train_data, val_data, test_data, batch_size):
 
     train_loader = DataLoader(train_data,
                               batch_size=batch_size,
@@ -76,7 +124,11 @@ def data_loaders(train_data, val_data, batch_size):
                             batch_size=batch_size,
                             shuffle=True,
                             pin_memory=True)
-    return train_loader, val_loader
+    test_loader = DataLoader(test_data,
+                            batch_size=batch_size,
+                            shuffle=True,
+                            pin_memory=True)
+    return train_loader, val_loader, test_loader
 
 
 def load_data_and_data_loaders(dataset, batch_size):
@@ -87,22 +139,40 @@ def load_data_and_data_loaders(dataset, batch_size):
         x_train_var = np.var(training_data.data / 255.0)
 
     elif dataset == 'MNIST':
-        training_data = datasets.MNIST(root="../data", train=True, download=False, transform=transform)
-        validation_data = datasets.MNIST(root="../data", train=False, download=False, transform=transform)
-        training_loader, validation_loader = data_loaders(
-            training_data, validation_data, batch_size)
-                
-        x_train_var = np.var(training_data.data.numpy() / 255.0)
+        data = datasets.MNIST(root="../data", train=True, download=False, transform=transform)
+        training_data, validation_data = torch.utils.data.random_split(data, [50000, 10000])
+        test_data = datasets.MNIST(root="../data", train=False, download=False, transform=transform)
+        training_loader, validation_loader, test_loader = data_loaders(
+            training_data, validation_data, test_data, batch_size
+        )
+        x_train_var = torch.var(data.data / 255.0)
 
-    elif dataset == 'NOISY_MNIST':
-        training_data = datasets.MNIST(root="../data", train=True, download=False, transform=transform)
-        validation_data = datasets.MNIST(root="../data", train=False, download=False, transform=transform)
-        # Add Noise Functions here
-        training_data.data = torch.poisson(training_data.data.to(torch.float16))
-        training_loader, validation_loader = data_loaders(
-            training_data, validation_data, batch_size)
-                
-        x_train_var = np.var(training_data.data.numpy() / 255.0)
+    elif dataset == 'POISSON_MNIST':
+        data = datasets.MNIST(root="../data", train=True, download=False, transform=poisson_noise_transform)
+        training_data, validation_data = torch.utils.data.random_split(data, [50000, 10000])
+        test_data = datasets.MNIST(root="../data", train=False, download=False, transform=poisson_noise_transform)
+        training_loader, validation_loader, test_loader = data_loaders(
+            training_data, validation_data, test_data, batch_size
+        )
+        x_train_var = torch.var(data.data / 255.0)
+
+    elif dataset == 'GAUSSIAN_MNIST':
+        data = datasets.MNIST(root="../data", train=True, download=False, transform=gaussian_noise_transform)
+        training_data, validation_data = torch.utils.data.random_split(data, [50000, 10000])
+        test_data = datasets.MNIST(root="../data", train=False, download=False, transform=gaussian_noise_transform)
+        training_loader, validation_loader, test_loader = data_loaders(
+            training_data, validation_data, test_data, batch_size
+        )
+        x_train_var = torch.var(data.data / 255.0)
+
+    elif dataset == 'SPECKLE_MNIST':
+        data = datasets.MNIST(root="../data", train=True, download=False, transform=speckle_noise_transform)
+        training_data, validation_data = torch.utils.data.random_split(data, [50000, 10000])
+        test_data = datasets.MNIST(root="../data", train=False, download=False, transform=speckle_noise_transform)
+        training_loader, validation_loader, test_loader = data_loaders(
+            training_data, validation_data, test_data, batch_size
+        )
+        x_train_var = torch.var(data.data / 255.0)
 
     elif dataset == 'BLOCK':
         training_data, validation_data = load_block()
@@ -121,7 +191,7 @@ def load_data_and_data_loaders(dataset, batch_size):
         raise ValueError(
             'Invalid dataset: only CIFAR10 and BLOCK datasets are supported.')
 
-    return training_data, validation_data, training_loader, validation_loader, x_train_var
+    return training_data, validation_data, training_loader, validation_loader, test_loader, x_train_var
 
 
 def readable_timestamp():
@@ -130,7 +200,7 @@ def readable_timestamp():
 
 
 def save_model_and_results(model, results, hyperparameters, timestamp):
-    SAVE_MODEL_PATH = os.getcwd() + '/results'
+    SAVE_MODEL_PATH = os.getcwd() + '/'
 
     results_to_save = {
         'model': model.state_dict(),
@@ -138,4 +208,4 @@ def save_model_and_results(model, results, hyperparameters, timestamp):
         'hyperparameters': hyperparameters
     }
     torch.save(results_to_save,
-               SAVE_MODEL_PATH + '/vqvae_data_' + timestamp + '.pth')
+               SAVE_MODEL_PATH + timestamp + '.pth')

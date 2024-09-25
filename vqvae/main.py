@@ -1,10 +1,11 @@
 import numpy as np
 import torch
-import torch.nn as nn
+import os
 import torch.optim as optim
 import argparse
 import utils
 from models.vqvae import VQVAE
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 
@@ -29,18 +30,22 @@ parser.add_argument("--dataset",  type=str, default='CIFAR10')
 parser.add_argument("-save", action="store_true")
 parser.add_argument("--filename",  type=str, default=timestamp)
 
+#testing
+parser.add_argument("-test", action="store_true")
+parser.add_argument("--model_path", type=str, default=None)
+
 args = parser.parse_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 if args.save:
-    print('Results will be saved in ./results/vqvae_' + args.filename + '.pth')
+    print('Results will be saved in ./' + args.filename + '.pth')
 
 """
 Load data and define batch data loaders
 """
 
-training_data, validation_data, training_loader, validation_loader, x_train_var = utils.load_data_and_data_loaders(
+training_data, validation_data, training_loader, validation_loader, test_loader, x_train_var = utils.load_data_and_data_loaders(
     args.dataset, args.batch_size)
 """
 Set up VQ-VAE model with components defined in ./models/ folder
@@ -65,7 +70,6 @@ results = {
 
 
 def train():
-
     for i in range(args.n_updates):
         (x, _) = next(iter(training_loader))
         x = x.to(device)
@@ -98,6 +102,27 @@ def train():
                   'Perplexity:', np.mean(results["perplexities"][-args.log_interval:]))
 
 
+def test(model_path):
+    model.load_state_dict(torch.load(model_path)['model'])
+    model.eval()
+    with torch.no_grad():
+        (x, _) = next(iter(test_loader))
+        x = x.to(device)
+        embedding_loss, x_hat, perplexity = model(x)
+        for i in range(10):
+            fig, ax = plt.subplots(1, 2)
+            ax[0].imshow(x[i].cpu().permute(1, 2, 0).numpy()+1)
+            ax[1].imshow(x_hat[i].cpu().permute(1, 2, 0).numpy()+1)
+            fig.savefig(f'{os.path.dirname(model_path)}/{os.path.basename(model_path).split(".")[0]}_{i}.png')
+        recon_loss = torch.mean((x_hat - x)**2) / x_train_var
+        loss = recon_loss + embedding_loss
+
+        print('Recon Error:', recon_loss.cpu().detach().numpy(),
+            'Loss', loss.cpu().detach().numpy(),
+            'Perplexity:', perplexity.cpu().detach().numpy())
+
 if __name__ == "__main__":
-    train()
-    
+    if args.test:
+        test(args.model_path)
+    else:
+        train()
