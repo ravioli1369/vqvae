@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser()
 Hyperparameters
 """
 timestamp = utils.readable_timestamp()
+
 parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--n_updates", type=int, default=5000)
 parser.add_argument("--n_hiddens", type=int, default=128)
@@ -28,7 +29,8 @@ parser.add_argument("--dataset",  type=str, default='CIFAR10')
 # whether or not to save model
 parser.add_argument("-save", action="store_true")
 parser.add_argument("--filename",  type=str, default=timestamp)
-
+parser.add_argument("--noise", type=str, default='gaussian')
+parser.add_argument("--noise_std", type=float, default=0.1)
 #testing
 parser.add_argument("-test", action="store_true")
 parser.add_argument("--model_path", type=str, default=None)
@@ -70,11 +72,19 @@ results = {
 
 def train():
     for i in range(args.n_updates):
+
         (x, _) = next(iter(training_loader))
         x = x.to(device)
+        if args.noise == 'gaussian':
+            noisy_x = x + args.noise_std * torch.randn_like(x)
+        elif args.noise == 'poisson':
+            noisy_x = torch.poisson(x)
+        elif args.noise == 'speckle':
+            noisy_x = x * torch.randn_like(x)
+        
         optimizer.zero_grad()
 
-        embedding_loss, x_hat, perplexity = model(x)
+        embedding_loss, x_hat, perplexity = model(noisy_x)
         recon_loss = torch.mean((x_hat - x)**2) / x_train_var
         loss = recon_loss + embedding_loss
 
@@ -106,17 +116,25 @@ def test(model_path):
     model.eval()
     with torch.no_grad():
         (x, _) = next(iter(test_loader))
+        if args.noise == 'gaussian':
+            noisy_x = x + args.noise_std * torch.randn_like(x)
+        elif args.noise == 'poisson':
+            noisy_x = torch.poisson(x)
+        elif args.noise == 'speckle':
+            noisy_x = x * torch.randn_like(x)
         x = x.to(device)
-        embedding_loss, x_hat, perplexity = model(x)
-        for i in range(10):
-            fig, ax = plt.subplots(1, 2, figsize=(9, 5))
-            ax[0].imshow(x[i].cpu().permute(1, 2, 0).numpy()+1)
-            ax[1].imshow(x_hat[i].cpu().permute(1, 2, 0).numpy()+1)
-            ax[0].set_title('Original', fontsize=15)
-            ax[1].set_title('Reconstructed', fontsize=15)
-            fig.suptitle(f"{os.path.basename(model_path).split('.')[0]}", fontsize=17)
-            fig.tight_layout()
-            fig.savefig(f'{os.path.dirname(model_path)}/{os.path.basename(model_path).split(".")[0]}_{i}.png')
+        noisy_x = noisy_x.to(device)
+        embedding_loss, x_hat, perplexity = model(noisy_x)
+        #show original, noisy and reconstructed image with appropriate titles
+        fig, ax = plt.subplots(1, 3)
+        ax[0].imshow(x[0].cpu().permute(1, 2, 0).numpy())
+        ax[0].set_title('Original')
+        ax[1].imshow(noisy_x[0].cpu().permute(1, 2, 0).numpy())
+        ax[1].set_title('Noisy')
+        ax[2].imshow(x_hat[0].cpu().permute(1, 2, 0).numpy())
+        ax[2].set_title('Reconstructed')
+        fig.savefig('Denoising_noise' + str(args.noise) + '.png')
+
         recon_loss = torch.mean((x_hat - x)**2) / x_train_var
         loss = recon_loss + embedding_loss
 
