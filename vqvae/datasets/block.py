@@ -10,14 +10,20 @@ class BlockDataset(Dataset):
     """
 
     def __init__(self, file_path, train=True, transform=None):
-        print('Loading block data')
+        print("Loading block data")
         data = np.load(file_path, allow_pickle=True)
-        print('Done loading block data')
-        data = np.array([cv2.resize(x[0][0][:, :, :3], dsize=(
-            32, 32), interpolation=cv2.INTER_CUBIC) for x in data])
+        print("Done loading block data")
+        data = np.array(
+            [
+                cv2.resize(
+                    x[0][0][:, :, :3], dsize=(32, 32), interpolation=cv2.INTER_CUBIC
+                )
+                for x in data
+            ]
+        )
 
         n = data.shape[0]
-        cutoff = n//10
+        cutoff = n // 10
         self.data = data[:-cutoff] if train else data[-cutoff:]
         self.transform = transform
 
@@ -34,14 +40,14 @@ class BlockDataset(Dataset):
 
 class LatentBlockDataset(Dataset):
     """
-    Loads latent block dataset 
+    Loads latent block dataset
     """
 
     def __init__(self, file_path, train=True, transform=None):
-        print('Loading latent block data')
+        print("Loading latent block data")
         data = np.load(file_path, allow_pickle=True)
-        print('Done loading latent block data')
-        
+        print("Done loading latent block data")
+
         self.data = data[:-500] if train else data[-500:]
         self.transform = transform
 

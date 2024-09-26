@@ -4,3 +4,4 @@ data/ImageNet/tiny-imagenet-200
 **/*.zip
 **/*.tar.gz
 **/__pycache__
+.vscode/
