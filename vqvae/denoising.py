@@ -78,9 +78,10 @@ def train():
         if args.noise == 'gaussian':
             noisy_x = x + args.noise_std * torch.randn_like(x)
         elif args.noise == 'poisson':
-            noisy_x = torch.poisson(x)
+            transformed_x = (x + 1) * 255
+            noisy_x = torch.poisson(transformed_x) / 255 - 1
         elif args.noise == 'speckle':
-            noisy_x = x * torch.randn_like(x)
+            noisy_x = x + (torch.randn(1) * args.noise_std)*torch.sqrt(x)
         
         optimizer.zero_grad()
 
