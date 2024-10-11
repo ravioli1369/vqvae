@@ -157,7 +157,9 @@ def reduce_dimensionality_lle(codebooks, n_components=2, method="modified"):
     return reduced_codebooks
 
 
-def visualize_codebooks(reduced_codebooks, labels, title, method_name):
+def visualize_codebooks(
+    reduced_codebooks, labels, title, method_name, save_path=None, axes_limits=None
+):
     plt.figure(figsize=(10, 8))
     for i, codebook in enumerate(reduced_codebooks):
         plt.scatter(
@@ -176,9 +178,15 @@ def visualize_codebooks(reduced_codebooks, labels, title, method_name):
     plt.legend()
     plt.grid(True)
     plt.show()
+    if save_path and axes_limits:
+        plt.xlim(*axes_limits[0])
+        plt.ylim(*axes_limits[1])
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path)
+        plt.close()
 
 
-def visualize_codebooks_from_paths(file_paths, labels):
+def visualize_codebooks_from_paths(file_paths, labels, save_paths=None):
     codebooks = load_codebooks(file_paths)
 
     if len(codebooks) != len(labels):
@@ -187,27 +195,52 @@ def visualize_codebooks_from_paths(file_paths, labels):
 
     reduced_codebooks_pca = reduce_dimensionality_pca(codebooks)
     visualize_codebooks(
-        reduced_codebooks_pca, labels, "Visualization of Codebooks", "PCA"
+        reduced_codebooks_pca,
+        labels,
+        "Visualization of Codebooks",
+        "PCA",
+        save_paths[0] if save_paths else None,
+        ([-3, 3], [-3, 3]),
     )
 
     reduced_codebooks_tsne = reduce_dimensionality_tsne(codebooks)
     visualize_codebooks(
-        reduced_codebooks_tsne, labels, "Visualization of Codebooks", "t-SNE"
+        reduced_codebooks_tsne,
+        labels,
+        "Visualization of Codebooks",
+        "t-SNE",
+        save_paths[1] if save_paths else None,
+        ([-10, 10], [-10, 10]),
     )
 
     reduced_codebooks_mds = reduce_dimensionality_mds(codebooks)
     visualize_codebooks(
-        reduced_codebooks_mds, labels, "Visualization of Codebooks", "MDS"
+        reduced_codebooks_mds,
+        labels,
+        "Visualization of Codebooks",
+        "MDS",
+        save_paths[2] if save_paths else None,
+        ([-3, 3], [-3, 3]),
     )
 
     reduced_codebooks_isomap = reduce_dimensionality_isomap(codebooks)
     visualize_codebooks(
-        reduced_codebooks_isomap, labels, "Visualization of Codebooks", "Isomap"
+        reduced_codebooks_isomap,
+        labels,
+        "Visualization of Codebooks",
+        "Isomap",
+        save_paths[3] if save_paths else None,
+        ([-3, 3], [-3, 3]),
     )
 
     reduced_codebooks_lle = reduce_dimensionality_lle(codebooks)
     visualize_codebooks(
-        reduced_codebooks_lle, labels, "Visualization of Codebooks", "Modified LLE"
+        reduced_codebooks_lle,
+        labels,
+        "Visualization of Codebooks",
+        "Modified-LLE",
+        save_paths[4] if save_paths else None,
+        ([-3, 3], [-3, 3]),
     )
 
 
