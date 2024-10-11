@@ -383,9 +383,11 @@ def readable_timestamp():
 def save_model_and_results(model, results, hyperparameters, timestamp):
     SAVE_MODEL_PATH = os.getcwd() + "/"
 
+    os.makedirs(SAVE_MODEL_PATH + os.path.dirname(timestamp), exist_ok=True)
     results_to_save = {
         "model": model.state_dict(),
         "results": results,
         "hyperparameters": hyperparameters,
     }
+
     torch.save(results_to_save, SAVE_MODEL_PATH + timestamp + ".pth")
