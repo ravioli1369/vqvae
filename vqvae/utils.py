@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
+from sklearn.manifold import TSNE, MDS
 
 from datasets.block import BlockDataset, LatentBlockDataset
 import matplotlib.pyplot as plt
@@ -138,6 +138,11 @@ def reduce_dimensionality_pca(codebooks, n_components=2):
     reduced_codebooks = [pca.fit_transform(codebook) for codebook in codebooks]
     return reduced_codebooks
 
+def reduce_dimensionality_mds(codebooks, n_components=2):
+    mds = MDS(n_components=n_components)
+    reduced_codebooks = [mds.fit_transform(codebook) for codebook in codebooks]
+    return reduced_codebooks
+
 
 def visualize_codebooks(reduced_codebooks, labels, title, method_name):
     plt.figure(figsize=(10, 8))
@@ -175,6 +180,11 @@ def visualize_codebooks_from_paths(file_paths, labels):
     reduced_codebooks_tsne = reduce_dimensionality_tsne(codebooks)
     visualize_codebooks(
         reduced_codebooks_tsne, labels, "Visualization of Codebooks", "t-SNE"
+    )
+
+    reduced_codebooks_mds = reduce_dimensionality_mds(codebooks)
+    visualize_codebooks(
+        reduced_codebooks_mds, labels, "Visualization of Codebooks", "MDS"
     )
 
 
