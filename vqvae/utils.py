@@ -7,6 +7,8 @@ import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision import transforms
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 from datasets.block import BlockDataset, LatentBlockDataset
 
@@ -81,6 +83,31 @@ speckle_noise_transform = transforms.Compose(
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ]
 )
+
+
+def load_codebooks(file_paths):
+    codebooks = []
+    for path in file_paths:
+        if os.path.exists(path):
+            codebook = np.load(path)
+            codebooks.append(codebook)
+        else:
+            print(f"Error: File not found at {path}")
+    return codebooks
+
+
+def reduce_dimensionality_tsne(codebooks, n_components=2):
+    tsne = TSNE(
+        n_components=n_components, random_state=42, perplexity=30, max_iter=1000
+    )
+    reduced_codebooks = [tsne.fit_transform(codebook) for codebook in codebooks]
+    return reduced_codebooks
+
+
+def reduce_dimensionality_pca(codebooks, n_components=2):
+    pca = PCA(n_components=n_components)
+    reduced_codebooks = [pca.fit_transform(codebook) for codebook in codebooks]
+    return reduced_codebooks
 
 
 def load_cifar():
