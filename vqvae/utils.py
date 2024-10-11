@@ -11,6 +11,35 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
 from datasets.block import BlockDataset, LatentBlockDataset
+import matplotlib.pyplot as plt
+import shutil
+
+params = {
+    "figure.figsize": [9, 6],
+    "axes.labelsize": 14,
+    "axes.titlesize": 18,
+    "axes.titlepad": 15,
+    "font.size": 16,
+    "legend.fontsize": 12,
+    "xtick.labelsize": 12,
+    "ytick.labelsize": 12,
+    "text.usetex": True if shutil.which("latex") else False,
+    "font.family": "serif",
+    "xtick.minor.visible": True,
+    "ytick.minor.visible": True,
+    "xtick.top": True,
+    "ytick.left": True,
+    "ytick.right": True,
+    "xtick.direction": "out",
+    "ytick.direction": "out",
+    "xtick.minor.size": 2.5,
+    "xtick.major.size": 5,
+    "ytick.minor.size": 2.5,
+    "ytick.major.size": 5,
+    "axes.axisbelow": True,
+    "figure.dpi": 200,
+}
+plt.rcParams.update(params)
 
 
 class AddGaussianNoise(object):
@@ -108,6 +137,45 @@ def reduce_dimensionality_pca(codebooks, n_components=2):
     pca = PCA(n_components=n_components)
     reduced_codebooks = [pca.fit_transform(codebook) for codebook in codebooks]
     return reduced_codebooks
+
+
+def visualize_codebooks(reduced_codebooks, labels, title, method_name):
+    plt.figure(figsize=(10, 8))
+    for i, codebook in enumerate(reduced_codebooks):
+        plt.scatter(
+            codebook[:, 0],
+            codebook[:, 1],
+            label=labels[i],
+            c=f"C{i}",
+            alpha=0.6,
+            edgecolors="w",
+            s=100,
+        )
+
+    plt.title(f"{title} ({method_name})")
+    plt.xlabel(f"{method_name} 1")
+    plt.ylabel(f"{method_name} 2")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def visualize_codebooks_from_paths(file_paths, labels):
+    codebooks = load_codebooks(file_paths)
+
+    if len(codebooks) != len(labels):
+        print("Error: The number of codebooks does not match the number of labels.")
+        return
+
+    reduced_codebooks_pca = reduce_dimensionality_pca(codebooks)
+    visualize_codebooks(
+        reduced_codebooks_pca, labels, "Visualization of Codebooks", "PCA"
+    )
+
+    reduced_codebooks_tsne = reduce_dimensionality_tsne(codebooks)
+    visualize_codebooks(
+        reduced_codebooks_tsne, labels, "Visualization of Codebooks", "t-SNE"
+    )
 
 
 def load_cifar():
