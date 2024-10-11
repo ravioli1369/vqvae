@@ -35,6 +35,10 @@ parser.add_argument("--filename", type=str, default=timestamp)
 parser.add_argument("-test", action="store_true")
 parser.add_argument("--model_path", type=str, default=None)
 
+# generate video of training
+parser.add_argument("-video", action="store_true")
+parser.add_argument("--video_directory", type=str, default=None)
+
 args = parser.parse_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -99,6 +103,58 @@ def train():
         results["perplexities"].append(perplexity.cpu().detach().numpy())
         results["loss_vals"].append(loss.cpu().detach().numpy())
         results["n_updates"] = i
+
+        if args.video:
+            model.eval()
+            codebook = [
+                model.vector_quantization.embedding.weight.detach().cpu().numpy()
+            ]
+            reduced_codebooks_pca = utils.reduce_dimensionality_pca(codebook)
+            utils.visualize_codebooks(
+                reduced_codebooks_pca,
+                ["Embedding Vectors"],
+                "Visualization of Codebooks during Training",
+                "PCA",
+                os.path.join(args.video_directory, f"pca/pca_{i}.png"),
+                ([-3, 3], [-3, 3]),
+            )
+            reduced_codebooks_tsne = utils.reduce_dimensionality_tsne(codebook)
+            utils.visualize_codebooks(
+                reduced_codebooks_tsne,
+                ["Embedding Vectors"],
+                "Visualization of Codebooks during Training",
+                "t-SNE",
+                os.path.join(args.video_directory, f"tsne/tsne_{i}.png"),
+                ([-10, 10], [-10, 10]),
+            )
+            reduced_codebooks_mds = utils.reduce_dimensionality_mds(codebook)
+            utils.visualize_codebooks(
+                reduced_codebooks_mds,
+                ["Embedding Vectors"],
+                "Visualization of Codebooks during Training",
+                "MDS",
+                os.path.join(args.video_directory, f"mds/mds_{i}.png"),
+                ([-3, 3], [-3, 3]),
+            )
+            reduced_codebooks_isomap = utils.reduce_dimensionality_isomap(codebook)
+            utils.visualize_codebooks(
+                reduced_codebooks_isomap,
+                ["Embedding Vectors"],
+                "Visualization of Codebooks during Training",
+                "Isomap",
+                os.path.join(args.video_directory, f"isomap/isomap_{i}.png"),
+                ([-3, 3], [-3, 3]),
+            )
+            reduced_codebooks_lle = utils.reduce_dimensionality_lle(codebook)
+            utils.visualize_codebooks(
+                reduced_codebooks_lle,
+                ["Embedding Vectors"],
+                "Visualization of Codebooks during Training",
+                "Modified LLE",
+                os.path.join(args.video_directory, f"lle/lle_{i}.png"),
+                ([-3, 3], [-3, 3]),
+            )
+            model.train()
 
         if i % args.log_interval == 0:
             """
