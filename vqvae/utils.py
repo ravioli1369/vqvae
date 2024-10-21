@@ -177,18 +177,21 @@ def visualize_codebooks(
     plt.ylabel(f"{method_name} 2")
     plt.legend()
     plt.grid(True)
-    plt.show()
+
     if save_path and axes_limits:
         plt.xlim(*axes_limits[0])
         plt.ylim(*axes_limits[1])
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path)
         plt.close()
+    else:
+        plt.show()
 
 
-def visualize_codebooks_from_paths(file_paths, labels, save_paths=None):
+def visualize_codebooks_from_paths(file_paths, labels, title=None, save_paths=None):
+    title = title if title is not None else "Visualization of Codebooks"
+
     codebooks = load_codebooks(file_paths)
-
     if len(codebooks) != len(labels):
         print("Error: The number of codebooks does not match the number of labels.")
         return
@@ -197,7 +200,7 @@ def visualize_codebooks_from_paths(file_paths, labels, save_paths=None):
     visualize_codebooks(
         reduced_codebooks_pca,
         labels,
-        "Visualization of Codebooks",
+        title,
         "PCA",
         save_paths[0] if save_paths else None,
         ([-3, 3], [-3, 3]),
@@ -207,7 +210,7 @@ def visualize_codebooks_from_paths(file_paths, labels, save_paths=None):
     visualize_codebooks(
         reduced_codebooks_tsne,
         labels,
-        "Visualization of Codebooks",
+        title,
         "t-SNE",
         save_paths[1] if save_paths else None,
         ([-10, 10], [-10, 10]),
@@ -217,7 +220,7 @@ def visualize_codebooks_from_paths(file_paths, labels, save_paths=None):
     visualize_codebooks(
         reduced_codebooks_mds,
         labels,
-        "Visualization of Codebooks",
+        title,
         "MDS",
         save_paths[2] if save_paths else None,
         ([-3, 3], [-3, 3]),
@@ -227,7 +230,7 @@ def visualize_codebooks_from_paths(file_paths, labels, save_paths=None):
     visualize_codebooks(
         reduced_codebooks_isomap,
         labels,
-        "Visualization of Codebooks",
+        title,
         "Isomap",
         save_paths[3] if save_paths else None,
         ([-3, 3], [-3, 3]),
@@ -237,7 +240,7 @@ def visualize_codebooks_from_paths(file_paths, labels, save_paths=None):
     visualize_codebooks(
         reduced_codebooks_lle,
         labels,
-        "Visualization of Codebooks",
+        title,
         "Modified-LLE",
         save_paths[4] if save_paths else None,
         ([-3, 3], [-3, 3]),
