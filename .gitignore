@@ -5,6 +5,5 @@ data/ImageNet/tiny-imagenet-200
 **/*.tar.gz
 **/__pycache__
 .vscode/
-**/video/
-!**/video/**/*.mp4
+**/video/**/*.png
 **/codebooks/
