@@ -1,7 +1,7 @@
 import imageio
 import os
 
-dist = ["poisson", "gaussian"]
+dist = ["speckle"]
 metrics = ["pca", "lle", "mds", "isomap", "tsne"]
 
 for d in dist:
