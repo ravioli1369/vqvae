@@ -7,6 +7,7 @@ import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision import transforms
+from scipy.stats import gaussian_kde
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE, MDS, Isomap, LocallyLinearEmbedding
 
@@ -155,6 +156,11 @@ def reduce_dimensionality_lle(codebooks, n_components=2, method="modified"):
     lle = LocallyLinearEmbedding(n_components=n_components, method=method)
     reduced_codebooks = [lle.fit_transform(codebook) for codebook in codebooks]
     return reduced_codebooks
+
+
+def reduce_dimensionality_kde(codebooks):
+    kdes = [gaussian_kde(codebook.flatten()) for codebook in codebooks]
+    return kdes
 
 
 def visualize_codebooks(

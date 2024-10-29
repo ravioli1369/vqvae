@@ -7,3 +7,4 @@ data/ImageNet/tiny-imagenet-200
 .vscode/
 **/video/**/*.png
 **/codebooks/
+AdverseWeatherSimulation
