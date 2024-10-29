@@ -184,14 +184,15 @@ def visualize_codebooks(
     plt.legend()
     plt.grid(True)
 
-    if save_path and axes_limits:
-        plt.xlim(*axes_limits[0])
-        plt.ylim(*axes_limits[1])
+    if save_path:
+        if axes_limits:
+            plt.xlim(*axes_limits[0])
+            plt.ylim(*axes_limits[1])
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path)
         plt.close()
     else:
-        plt.show()
+        plt.close()
 
 
 def visualize_codebooks_from_paths(file_paths, labels, title=None, save_paths=None):
@@ -219,7 +220,7 @@ def visualize_codebooks_from_paths(file_paths, labels, title=None, save_paths=No
         title,
         "t-SNE",
         save_paths[1] if save_paths else None,
-        ([-10, 10], [-10, 10]),
+        None,
     )
 
     reduced_codebooks_mds = reduce_dimensionality_mds(codebooks)
