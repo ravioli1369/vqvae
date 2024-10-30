@@ -192,7 +192,7 @@ def visualize_codebooks(
         plt.savefig(save_path)
         plt.close()
     else:
-        plt.close()
+        plt.show()
 
 
 def visualize_codebooks_from_paths(file_paths, labels, title=None, save_paths=None):
@@ -252,6 +252,26 @@ def visualize_codebooks_from_paths(file_paths, labels, title=None, save_paths=No
         save_paths[4] if save_paths else None,
         ([-3, 3], [-3, 3]),
     )
+
+    reduced_codebooks_kde = reduce_dimensionality_kde(codebooks)
+    plt.figure(figsize=(10, 8))
+    x_vals = np.linspace(
+        np.min(codebooks),
+        np.max(codebooks),
+        1000,
+    )
+    for kde, label in zip(reduced_codebooks_kde, labels):
+        plt.plot(x_vals, kde(x_vals), label=label)
+        plt.fill_between(x_vals, kde(x_vals), alpha=0.3)
+    plt.title(f"{title} (KDE)")
+    plt.xlabel("Value")
+    plt.ylabel("Density")
+    plt.legend()
+    if save_paths:
+        plt.savefig(save_paths[5] if save_paths else None)
+        plt.close()
+    else:
+        plt.show()
 
 
 def load_cifar():
