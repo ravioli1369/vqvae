@@ -4,25 +4,25 @@ import numpy as np
 from glob import glob
 
 gaussian_codebooks = np.sort(
-    glob("/home/exouser/Documents/vqvae/results/gaussian/codebooks/*.npy")
+    glob("/home/exouser/Documents/vqvae/video/codebooks/gaussian/*.npy")
 )
 epochs = [int(file.split("_")[-1].split(".")[0]) for file in gaussian_codebooks]
 sort = np.argsort(epochs)
 gaussian_codebooks = gaussian_codebooks[sort]
 poisson_codebooks = np.sort(
-    glob("/home/exouser/Documents/vqvae/results/poisson/codebooks/*.npy")
+    glob("/home/exouser/Documents/vqvae/video/codebooks/poisson/*.npy")
 )
 epochs = [int(file.split("_")[-1].split(".")[0]) for file in poisson_codebooks]
 sort = np.argsort(epochs)
 poisson_codebooks = poisson_codebooks[sort]
 speckle_codebooks = np.sort(
-    glob("/home/exouser/Documents/vqvae/results/speckle/codebooks/*.npy")
+    glob("/home/exouser/Documents/vqvae/video/codebooks/speckle/*.npy")
 )
 epochs = [int(file.split("_")[-1].split(".")[0]) for file in speckle_codebooks]
 sort = np.argsort(epochs)
 speckle_codebooks = speckle_codebooks[sort]
 original_codebooks = np.sort(
-    glob("/home/exouser/Documents/vqvae/results/original/codebooks/*.npy")
+    glob("/home/exouser/Documents/vqvae/video/codebooks/original/*.npy")
 )
 epochs = [int(file.split("_")[-1].split(".")[0]) for file in original_codebooks]
 sort = np.argsort(epochs)
