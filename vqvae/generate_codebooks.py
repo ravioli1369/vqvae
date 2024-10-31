@@ -128,7 +128,7 @@ if __name__ == "__main__":
                     + "/"
                     + folder
                     + "/"
-                    + f"notebook_dim_{dim}_n_embed_{n_embed}"
+                    + f"codebook_dim_{dim}_n_embed_{n_embed}"
                 )
                 model = VQVAE(
                     128,
