@@ -97,13 +97,13 @@ def display_video():
     # Create a new pop-up window
     popup = tk.Toplevel(root)
     popup.title("Video Display")
-    popup.geometry("800x600")
+    popup.geometry("1000x800")
 
     def play_video():
         try:
             frame = video_reader.get_next_data()
             frame = Image.fromarray(frame)
-            frame = frame.resize((800, 600))  # Resize video frame
+            frame = frame.resize((1000, 800))  # Resize video frame
             img_tk = ImageTk.PhotoImage(frame)
             vid_label.configure(image=img_tk)
             vid_label.image = img_tk  # Reference to avoid garbage collection
