@@ -26,7 +26,7 @@ parser.add_argument("--n_embeddings", type=int, default=64)
 parser.add_argument("--beta", type=float, default=0.25)
 parser.add_argument("--learning_rate", type=float, default=3e-4)
 parser.add_argument("--log_interval", type=int, default=50)
-parser.add_argument("--dataset", type=str, default="CIFAR10")
+parser.add_argument("--dataset", type=str, default="MNIST")
 
 # whether or not to save model
 parser.add_argument("-save", action="store_true")
