@@ -35,7 +35,7 @@ def display_metrics():
             "Please select different distributions for codebooks 1 and 2",
         )
         return
-    if metric not in ["isomap", "pca", "tsne", "mds", "kde"]:
+    if metric not in ["isomap", "pca", "tsne", "mds", "lle", "kde"]:
         messagebox.showerror(
             "Invalid Selection", "Please select a valid metric for visualization"
         )
@@ -85,7 +85,7 @@ def display_video():
             "Please select different distributions for codebooks 1 and 2",
         )
         return
-    if metric not in ["isomap", "pca", "tsne", "mds", "kde"]:
+    if metric not in ["isomap", "pca", "tsne", "mds", "lle", "kde"]:
         messagebox.showerror(
             "Invalid Selection", "Please select a valid metric for visualization"
         )
@@ -122,7 +122,7 @@ def display_video():
 codebook_options = [
     ["Codebook 1", "Original", "Gaussian", "Poisson", "Speckle"],
     ["Codebook 2", "Original", "Gaussian", "Poisson", "Speckle"],
-    ["Metric", "Isomap", "PCA", "T-SNE", "MDS", "KDE"],
+    ["Metric", "Isomap", "PCA", "T-SNE", "MDS", "LLE", "KDE"],
 ]
 
 # Create a list to hold the selected options
