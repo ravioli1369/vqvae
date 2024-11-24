@@ -159,7 +159,7 @@ def test(model_path):
             ax[2].set_title("Reconstructed")
             ax[2].axis("off")
             fig.savefig("Inpainting for image " + str(i) + ".png")
-            plt.close(fig)
+            plt.close(fig)  
         recon_loss = torch.mean((x_hat - x) ** 2) / x_train_var
         loss = recon_loss + embedding_loss
 
