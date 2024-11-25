@@ -47,7 +47,7 @@ plt.rcParams.update(params)
 
 
 class AddGaussianNoise(object):
-    def __init__(self, mean=0.0, std=0.0):
+    def __init__(self, mean=0.0, std=1.0):
         self.std = std
         self.mean = mean
 
