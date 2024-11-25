@@ -39,7 +39,6 @@ parser.add_argument("-test", action="store_true")
 parser.add_argument("--model_path", type=str, default=None)
 
 # generate video of training
-parser.add_argument("-video", action="store_true")
 parser.add_argument("--video_directory", type=str, default=None)
 
 args = parser.parse_args()
@@ -107,7 +106,7 @@ def train():
         results["loss_vals"].append(loss.cpu().detach().numpy())
         results["n_updates"] = i
 
-        if (args.video) and (i % args.log_interval == 0):
+        if (args.video_directory) and (i % args.log_interval == 0):
             model.eval()
             codebook = model.vector_quantization.embedding.weight.detach().cpu().numpy()
             np.save(f"{args.video_directory}/codebook_{i}.npy", codebook)
