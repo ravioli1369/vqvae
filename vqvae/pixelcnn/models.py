@@ -4,6 +4,9 @@ import torch.nn.functional as F
 from torch.distributions import kl_divergence
 from torch.distributions.normal import Normal
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 
 def weights_init(m):
     classname = m.__class__.__name__

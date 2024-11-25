@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+np.random.seed(0)
+torch.manual_seed(0)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 

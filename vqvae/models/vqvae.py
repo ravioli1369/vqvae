@@ -6,6 +6,9 @@ from models.decoder import Decoder
 from models.encoder import Encoder
 from models.quantizer import VectorQuantizer
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 
 class VQVAE(nn.Module):
     def __init__(

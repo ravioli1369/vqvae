@@ -15,6 +15,9 @@ from datasets.block import BlockDataset, LatentBlockDataset
 import matplotlib.pyplot as plt
 import shutil
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 params = {
     "figure.figsize": [9, 6],
     "axes.labelsize": 14,
@@ -44,7 +47,7 @@ plt.rcParams.update(params)
 
 
 class AddGaussianNoise(object):
-    def __init__(self, mean=0.0, std=1.0):
+    def __init__(self, mean=0.0, std=0.0):
         self.std = std
         self.mean = mean
 

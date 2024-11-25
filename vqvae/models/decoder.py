@@ -5,6 +5,9 @@ import torch.nn.functional as F
 
 from models.residual import ResidualStack
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 
 class Decoder(nn.Module):
     """

@@ -9,6 +9,9 @@ import torch.optim as optim
 import utils
 from models.vqvae import VQVAE
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 parser = argparse.ArgumentParser()
 
 """

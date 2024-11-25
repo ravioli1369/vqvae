@@ -8,6 +8,9 @@ import torch.nn as nn
 from torchvision import datasets, transforms
 from torchvision.utils import save_image
 
+np.random.seed(0)
+torch.manual_seed(0)
+
 """
 add vqvae and pixelcnn dirs to path
 make sure you run from vqvae directory
