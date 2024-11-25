@@ -46,6 +46,87 @@ params = {
 plt.rcParams.update(params)
 
 
+def gaussian_noise_transform_(image, mean=0, std=0.1):
+    """
+    Apply Gaussian noise to an RGB image.
+
+    Parameters:
+    - image: A PIL image or a tensor.
+    - mean: Mean of the Gaussian noise.
+    - std: Standard deviation of the Gaussian noise.
+
+    Returns:
+    - Noisy image.
+    """
+    if isinstance(image, np.ndarray):
+        image = torch.from_numpy(image)
+    if isinstance(image, torch.Tensor):
+        if image.ndimension() == 3 and image.size(0) == 3:  # Check if the image is RGB
+            noise = torch.randn(image.size()) * std + mean
+            noisy_image = image + noise
+            noisy_image = torch.clamp(
+                noisy_image, 0, 1
+            )  # Ensure the values are within [0, 1]
+            return noisy_image
+        else:
+            raise ValueError("Input image must be an RGB image with 3 channels.")
+    else:
+        raise TypeError("Input image must be a numpy array or a torch tensor.")
+
+
+def speckle_noise_transform_(image, std=0.1):
+    """
+    Apply Speckle noise to an RGB image.
+
+    Parameters:
+    - image: A PIL image or a tensor.
+    - std: Standard deviation of the Speckle noise.
+
+    Returns:
+    - Noisy image.
+    """
+    if isinstance(image, np.ndarray):
+        image = torch.from_numpy(image)
+    if isinstance(image, torch.Tensor):
+        if image.ndimension() == 3 and image.size(0) == 3:  # Check if the image is RGB
+            noise = torch.randn(image.size()) * std
+            noisy_image = image + image * noise
+            noisy_image = torch.clamp(
+                noisy_image, 0, 1
+            )  # Ensure the values are within [0, 1]
+            return noisy_image
+        else:
+            raise ValueError("Input image must be an RGB image with 3 channels.")
+    else:
+        raise TypeError("Input image must be a numpy array or a torch tensor.")
+
+
+def poisson_noise_transform_(image):
+    """
+    Apply Poisson noise to an RGB image.
+
+    Parameters:
+    - image: A PIL image or a tensor.
+
+    Returns:
+    - Noisy image.
+    """
+    if isinstance(image, np.ndarray):
+        image = torch.from_numpy(image)
+    if isinstance(image, torch.Tensor):
+        if image.ndimension() == 3 and image.size(0) == 3:  # Check if the image is RGB
+            noise = torch.poisson(image.float() * 255.0) / 255.0
+            noisy_image = image + noise
+            noisy_image = torch.clamp(
+                noisy_image, 0, 1
+            )  # Ensure the values are within [0, 1]
+            return noisy_image
+        else:
+            raise ValueError("Input image must be an RGB image with 3 channels.")
+    else:
+        raise TypeError("Input image must be a numpy array or a torch tensor.")
+
+
 class AddGaussianNoise(object):
     def __init__(self, mean=0.0, std=1.0):
         self.std = std
@@ -89,7 +170,52 @@ transform = transforms.Compose(
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ]
 )
+transform_rgb = transforms.Compose(
+    [
+        transforms.Resize((64, 64)),  # Resize images if necessary
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+        ),  # Mean and std for RGB images
+    ]
+)
 
+gaussian_transform_rgb = transforms.Compose(
+    [
+        transforms.Resize((64, 64)),  # Resize images if necessary
+        transforms.ToTensor(),
+        transforms.Lambda(
+            lambda img: gaussian_noise_transform_(img, mean=0, std=0.1)
+        ),  # Add Gaussian noise
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+        ),  # Mean and std for RGB images
+    ]
+)
+poisson_transform_rgb = transforms.Compose(
+    [
+        transforms.Resize((64, 64)),  # Resize images if necessary
+        transforms.ToTensor(),
+        transforms.Lambda(
+            lambda img: poisson_noise_transform_(img)
+        ),  # Add Poisson noise
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+        ),  # Mean and std for RGB images
+    ]
+)
+speckle_transform_rgb = transforms.Compose(
+    [
+        transforms.Resize((64, 64)),  # Resize images if necessary
+        transforms.ToTensor(),
+        transforms.Lambda(
+            lambda img: speckle_noise_transform_(img, std=0.1)
+        ),  # Add Speckle noise
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+        ),  # Mean and std for RGB images
+    ]
+)
 gaussian_noise_transform = transforms.Compose(
     [
         transforms.ToTensor(),
@@ -130,9 +256,7 @@ def load_codebooks(file_paths):
 
 
 def reduce_dimensionality_tsne(codebooks, n_components=2):
-    tsne = TSNE(
-        n_components=n_components, random_state=42, perplexity=30, max_iter=1000
-    )
+    tsne = TSNE(n_components=n_components, random_state=42, perplexity=30)
     reduced_codebooks = [tsne.fit_transform(codebook) for codebook in codebooks]
     return reduced_codebooks
 
@@ -445,6 +569,92 @@ def load_data_and_data_loaders(dataset, batch_size):
         )
         x_train_var = torch.var(data.data / 255.0)
 
+    elif dataset == "IMAGENET":
+        training_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/train",
+            transform=transform_rgb,
+        )
+
+        validation_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/val",
+            transform=transform_rgb,
+        )
+
+        test_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/test",
+            transform=transform_rgb,
+        )
+
+        training_loader, validation_loader, test_loader = data_loaders(
+            training_data, validation_data, test_data, batch_size
+        )
+
+        x_train_var = np.array([2, 2, 2])  # np.var(training_data / 255.0)
+
+    elif dataset == "GAUSSIAN_IMAGENET":
+        training_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/train",
+            transform=gaussian_transform_rgb,
+        )
+
+        validation_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/val",
+            transform=gaussian_transform_rgb,
+        )
+
+        test_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/test",
+            transform=gaussian_transform_rgb,
+        )
+
+        training_loader, validation_loader, test_loader = data_loaders(
+            training_data, validation_data, test_data, batch_size
+        )
+
+        x_train_var = np.array([2, 2, 2])
+
+    elif dataset == "POISSON_IMAGENET":
+        training_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/train",
+            transform=poisson_transform_rgb,
+        )
+
+        validation_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/val",
+            transform=poisson_transform_rgb,
+        )
+
+        test_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/test",
+            transform=poisson_transform_rgb,
+        )
+
+        training_loader, validation_loader, test_loader = data_loaders(
+            training_data, validation_data, test_data, batch_size
+        )
+        x_train_var = np.array([2, 2, 2])
+
+    elif dataset == "SPECKLE_IMAGENET":
+        training_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/train",
+            transform=speckle_transform_rgb,
+        )
+
+        validation_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/val",
+            transform=speckle_transform_rgb,
+        )
+
+        test_data = datasets.ImageFolder(
+            "../data/ImageNet/tiny-imagenet-200/test",
+            transform=speckle_transform_rgb,
+        )
+
+        training_loader, validation_loader, test_loader = data_loaders(
+            training_data, validation_data, test_data, batch_size
+        )
+        x_train_var = np.array([2, 2, 2])
+
     elif dataset == "BLOCK":
         training_data, validation_data = load_block()
         training_loader, validation_loader = data_loaders(
@@ -458,7 +668,7 @@ def load_data_and_data_loaders(dataset, batch_size):
             training_data, validation_data, batch_size
         )
 
-        x_train_var = np.var(training_data.data)
+        x_train_var = np.var(training_data[0])
 
     else:
         raise ValueError(

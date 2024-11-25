@@ -19,7 +19,7 @@ Hyperparameters
 """
 timestamp = utils.readable_timestamp()
 parser.add_argument("--batch_size", type=int, default=32)
-parser.add_argument("--n_updates", type=int, default=5000)
+parser.add_argument("--n_updates", type=int, default=2000)
 parser.add_argument("--n_hiddens", type=int, default=128)
 parser.add_argument("--n_residual_hiddens", type=int, default=32)
 parser.add_argument("--n_residual_layers", type=int, default=2)
@@ -95,10 +95,10 @@ def train():
         optimizer.zero_grad()
 
         embedding_loss, x_hat, perplexity = model(x)
-        recon_loss = torch.mean((x_hat - x) ** 2) / x_train_var
+        recon_loss = torch.mean((x_hat - x) ** 2) / torch.tensor(x_train_var).to(device)
         loss = recon_loss + embedding_loss
 
-        loss.backward()
+        loss.mean().backward()
         optimizer.step()
 
         results["recon_errors"].append(recon_loss.cpu().detach().numpy())
