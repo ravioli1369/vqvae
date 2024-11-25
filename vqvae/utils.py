@@ -93,7 +93,7 @@ transform = transforms.Compose(
 gaussian_noise_transform = transforms.Compose(
     [
         transforms.ToTensor(),
-        AddGaussianNoise(0.0, 0.1),
+        AddGaussianNoise(),
         transforms.Lambda(lambda x: x.repeat(3, 1, 1)),  # Repeat channel
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ]
